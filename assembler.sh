@@ -122,7 +122,7 @@ then
         exit 1
     fi
 else
-    echo "Attached not a valid file"
+    echo "usage: input is not a file or it does not exist"
     exit 1
 fi
 num_of_vars=0
@@ -211,9 +211,9 @@ do
                 exit 1
         esac
         # appends the bytes to dataArray
-        dataArray[$line_count]="$bin_op$bin_reg" 
+        dataArray[$line_count-1]="$bin_op$bin_reg" 
         (( line_count++ ))
-        dataArray[$line_count]="$bin_mem"
+        dataArray[$line_count-1]="$bin_mem"
     # only activates if its the first line (num of values declaration)
     elif [ "$line_count" -eq 0 ]
     then
@@ -228,13 +228,6 @@ do
         then
             # edge case : if number of values is 0, no_vars condition triggers (must have QUIT as next line)
             no_vars=0
-            bin_num_vars=00000000
-            dataArray["$line_count"]="$bin_num_vars"
-        else
-            # converts number of values to binary and appends to dataArray
-            bin_num_vars=$(tobin "$num_of_vars")
-            bin_num_vars=$(printf "%08d" "$bin_num_vars")
-            dataArray["$line_count"]="$bin_num_vars"
         fi
     # if inside value declaration zone
     elif [[ "$line_count" -lt $(($num_of_vars + 1)) ]]
@@ -259,7 +252,7 @@ do
         # converts value to binary and stores in dataArray
         bin_val=$(tobin $val)
         bin_val=$(printf "%08d" "$bin_val")
-        dataArray[$line_count]="$bin_val"
+        dataArray[$line_count-1]="$bin_val"
     fi
     # line_count variable increments to keep track
     (( line_count++ ))
@@ -286,11 +279,12 @@ case "$filename" in
         filetype="OTHER"
         ;;
 esac
-printf "It is an %s program\n" "$filetype"
-for ((i=0;i<$line_count;i++))
+printf "It is a %s program\n" "$filetype"
+echo "The content of the .bin file is"
+for ((i=0;i<$line_count-1;i++))
 do
     hex_data=$(tohex "${dataArray[i]}")
     echo "$hex_data"
-    echo "\x$hex_data" >> "$filename".bin
-done
+    printf "\x$hex_data" >> "$filename".bin
+done    
 exit 0
