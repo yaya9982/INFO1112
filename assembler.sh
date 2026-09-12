@@ -105,12 +105,12 @@ tobin(){
 if [ -z "$1" ]
 then
     echo "usage: no argument is provided"
-    exit 2
+    exit 1
 fi
 if [[ "$2" || "$3" || "$4" ]]
 then
     echo "usage: more than one arguments are provided"
-    exit 3
+    exit 1
 fi
 if [ -f "$1" ]
 then
@@ -119,11 +119,11 @@ then
         vscfile=$1
     else
         echo "usage: input does not have the extension .vsc"
-        exit 3
+        exit 1
     fi
 else
     echo "Attached not a valid file"
-    exit 0
+    exit 1
 fi
 num_of_vars=0
 IFS=. read -r filename vsc <<< "$vscfile"
@@ -138,7 +138,7 @@ do
     if (($line_count > $(( $num_of_vars + 200 ))))
     then
         echo "(ERROR) Too many instructions!"
-        exit 0
+        exit 1
     fi
     if [ $no_vars -eq 0 ]
     then
@@ -146,7 +146,7 @@ do
         if [ "$line" != "QUIT,0,0" ]
         then
             echo "(ERROR) must QUIT if 0 values"
-            exit 0
+            exit 1
         fi
     fi
     # only checks if 'instruction' lines (starts with letter)
@@ -157,15 +157,15 @@ do
         if [[ "$reg" != [0-3] ]]
         then
             echo "(ERROR) Register value invalid!"
-            exit 0
+            exit 1
         elif [[ ! "$mem" =~ ^[0-9]+$ ]]
         then
             echo "(ERROR) Memory value invalid!"
-            exit 0
+            exit 1
         elif [[ "$mem" -gt 255 || "$mem" -lt 0 ]]
         then
             echo "(ERROR) Memory value invalid!"
-            exit 0
+            exit 1
         fi
         # converts register value to binary
         bin_reg=$(tobin $reg)
@@ -194,7 +194,7 @@ do
                 if [[ "$mem" -ne 0 || "$reg" -ne 0 ]]
                 then
                     echo "(ERROR) QUIT must have addresses 0,0"
-                    exit 0
+                    exit 1
                 fi
                 ;;
             "PRINT")
@@ -202,13 +202,13 @@ do
                 if [[ "$mem" -ne 0 ]]
                 then
                     echo "(ERROR) PRINT must have memory address 0"
-                    exit 0
+                    exit 1
                 fi
                 ;;
             # catches any invalid operation code : LOADDD, INVALID, load, l0ad, etc
             *)
                 echo "(ERROR)INVALID OPERATION PROVIDED : $op"
-                exit 0
+                exit 1
         esac
         # appends the bytes to dataArray
         dataArray[$line_count]="$bin_op$bin_reg" 
@@ -222,7 +222,7 @@ do
         if ! [[ "$num_of_vars" =~ ^[0-9]+$ ]]
         then
             echo "(ERROR) Number of variables not a positive integer!"
-            exit 0
+            exit 1
         fi
         if [ "$num_of_vars" -eq 0 ]
         then
@@ -245,16 +245,16 @@ do
         if ! [[ "$val" =~ ^[0-9]+$ ]]
         then
             echo "(ERROR) Value not a positive integer!"
-            exit 0
+            exit 1
         fi
         if [ "$val" -lt 0 ]
         then
             echo "(ERROR) value must be positive!"
-            exit 0
+            exit 1
         elif [ "$val" -gt 127 ]
         then
             echo "(ERROR) value cannot exceed 127!"
-            exit 0
+            exit 1
         fi
         # converts value to binary and stores in dataArray
         bin_val=$(tobin $val)
@@ -268,11 +268,11 @@ done < $vscfile
 if [ $line_count -eq 0 ]
 then
     echo "usage: the file is empty - no .bin file is produced"
-    exit 2
+    exit 1
 elif [ $quitted -ne 0 ]
 then
     echo "(ERROR) Program never quitted"
-    exit 3
+    exit 1
 fi
 # iterates through dataArray to convert binary to hexadecimal and add to file
 case "$filename" in
