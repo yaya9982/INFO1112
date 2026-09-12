@@ -104,13 +104,13 @@ tobin(){
 # check for file input : no input, invalid file, too many
 if [ -z "$1" ]
 then
-    echo "No .vsc file provided"
-    exit 0
+    echo "usage: no argument is provided"
+    exit 2
 fi
 if [[ "$2" || "$3" || "$4" ]]
 then
-    echo "Too many arguments!"
-    exit 0
+    echo "usage: more than one arguments are provided"
+    exit 3
 fi
 if [ -f "$1" ]
 then
@@ -118,8 +118,8 @@ then
     then
         vscfile=$1
     else
-        echo "Attached file NOT a .vsc file!"
-        exit 0
+        echo "usage: input does not have the extension .vsc"
+        exit 3
     fi
 else
     echo "Attached not a valid file"
@@ -265,15 +265,32 @@ do
     (( line_count++ ))
 done < $vscfile
 # errors if program never has QUIT
-if [ $quitted -ne 0 ]
+if [ $line_count -eq 0 ]
+then
+    echo "usage: the file is empty - no .bin file is produced"
+    exit 2
+elif [ $quitted -ne 0 ]
 then
     echo "(ERROR) Program never quitted"
-    exit 0
+    exit 3
 fi
 # iterates through dataArray to convert binary to hexadecimal and add to file
+case "$filename" in
+    "add")
+        filetype="ADD/SUB"
+        ;;
+    "quit")
+        filetype="QUIT"
+        ;;
+    *)
+        filetype="OTHER"
+        ;;
+esac
+printf "It is an %s program\n" "$filetype"
 for ((i=0;i<$line_count;i++))
 do
     hex_data=$(tohex "${dataArray[i]}")
     echo "$hex_data"
-    echo "$hex_data" >> "$filename".bin
+    echo "\x$hex_data" >> "$filename".bin
 done
+exit 0
