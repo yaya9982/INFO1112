@@ -25,22 +25,22 @@ tohex(){
     else
         case $sum_f in
             10)
-                hex=A
+                hex=a
                 ;;
             11)
-                hex=B
+                hex=b
                 ;;
             12)
-                hex=C
+                hex=c
                 ;;
             13)
-                hex=D
+                hex=d
                 ;;
             14)
-                hex=E
+                hex=e
                 ;;
             15)
-                hex=F
+                hex=f
                 ;;
             *)
                 echo "(ERROR) NOT A VALID NUMBER"
@@ -53,22 +53,22 @@ tohex(){
     else
         case $sum_b in
             10)
-                hex="$hex"A
+                hex="$hex"a
                 ;;
             11)
-                hex="$hex"B
+                hex="$hex"b
                 ;;
             12)
-                hex="$hex"C
+                hex="$hex"c
                 ;;
             13)
-                hex="$hex"D
+                hex="$hex"d
                 ;;
             14)
-                hex="$hex"E
+                hex="$hex"e
                 ;;
             15)
-                hex="$hex"F
+                hex="$hex"f
                 ;;
             *)
                 echo "(ERROR) NOT A VALID NUMBER"
@@ -111,6 +111,14 @@ if [[ "$2" || "$3" || "$4" ]]
 then
     echo "usage: more than one arguments are provided"
     exit 1
+fi
+if [[ "$1" == *.* ]]
+then
+    if ! [[ "$1" == *.vsc ]]
+    then
+        echo "usage: input does not have the extension .vsc"
+        exit 1
+    fi
 fi
 if [ -f "$1" ]
 then
@@ -276,12 +284,13 @@ then
 fi
 # iterates through dataArray to convert binary to hexadecimal and add to file
 printf "It is a %s program\n" "$filetype"
+echo "********************"
 echo "The content of the .bin file is"
 for ((i=0;i<$line_count-1;i++))
 do
     hex_data=$(tohex "${dataArray[i]}")
     echo "$hex_data"
-    printf "\x$hex_data" >> "$filename".bin
+    printf "\x$hex_data" >> "$(pwd)/$filename".bin
 done    
 exit 0
 
