@@ -134,6 +134,7 @@ no_vars=1
 quitted=1
 while read -r line 
 do
+    line="${line%$'\r'}"
     # errors if over 100 instructions, which is 200 lines (2 lines per instruction)
     if (($line_count > $(( $num_of_vars + 200 ))))
     then
@@ -228,6 +229,12 @@ do
         then
             # edge case : if number of values is 0, no_vars condition triggers (must have QUIT as next line)
             no_vars=0
+            filetype="QUIT"
+        elif [ "$num_of_vars" -eq 2 ]
+        then
+            filetype="ADD/SUB"
+        else
+            filetype=""
         fi
     # if inside value declaration zone
     elif [[ "$line_count" -lt $(($num_of_vars + 1)) ]]
@@ -268,17 +275,6 @@ then
     exit 1
 fi
 # iterates through dataArray to convert binary to hexadecimal and add to file
-case "$filename" in
-    "add")
-        filetype="ADD/SUB"
-        ;;
-    "quit")
-        filetype="QUIT"
-        ;;
-    *)
-        filetype="OTHER"
-        ;;
-esac
 printf "It is a %s program\n" "$filetype"
 echo "The content of the .bin file is"
 for ((i=0;i<$line_count-1;i++))
@@ -288,3 +284,6 @@ do
     printf "\x$hex_data" >> "$filename".bin
 done    
 exit 0
+
+
+
